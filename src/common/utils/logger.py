@@ -3,9 +3,9 @@
 import os
 import logging.config
 from datetime import datetime
-import yaml
 
 from src.common.utils.paths import get_file_path
+from src.common.utils.utils import get_config
 from src.common.constants.constants import DateFormat, FileType
 
 class Logger:
@@ -26,10 +26,9 @@ class Logger:
         config_path = get_file_path('config/config.yml')
         file_name = f"{datetime.now().strftime(DateFormat.DATE_FILE_FORMAT.value)}{FileType.LOG.value}"
         log_filename = os.path.join(log_dir, file_name)
-        with open(config_path, 'r', encoding='utf-8') as config_file:
-            config = yaml.safe_load(config_file.read())
-            config['logging']['handlers']['file_handler']['filename'] = log_filename
-            logging.config.dictConfig(config)
+        config = get_config(config_path)['logging']
+        config['handlers']['file_handler']['filename'] = log_filename
+        logging.config.dictConfig(config)
 
     def info(self, message:str):
         """log infos

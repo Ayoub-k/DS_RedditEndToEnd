@@ -26,3 +26,16 @@ logging:
       handlers: [console, file_handler]
       propagate: no
 
+search:
+  query: football
+  limit: 2
+data_path:
+  path_comments: /home/ay/DataEng/projects/reddit/data/comments
+  path_posts: /home/ay/DataEng/projects/reddit/data/posts
+  path_tmp: /home/ay/DataEng/projects/reddit/tmp
+  path_project: /home/ay/DataEng/projects/reddit/
+names_files_etl:
+  extract: extract.py
+  load: load.py
+  transform: transform.py
+
