@@ -5,8 +5,8 @@ import logging.config
 from datetime import datetime
 
 from src.common.utils.paths import get_file_path
-from src.common.utils.utils import get_config
-from src.common.constants.constants import DateFormat, FileType
+from src.common.utils.config import get_config
+from src.common.constants.constants import DateFormat, FileType, PathFolder
 
 class Logger:
     """Logger class for logging infos
@@ -19,11 +19,11 @@ class Logger:
     def __setup_logging(self):
         """Set up configuration logger
         """
-        log_dir = get_file_path('logs')
+        log_dir = get_file_path(PathFolder.LOGS.value)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
-        config_path = get_file_path('config/config.yml')
+        config_path = get_file_path(PathFolder.CONFIG_YAML.value)
         file_name = f"{datetime.now().strftime(DateFormat.DATE_FILE_FORMAT.value)}{FileType.LOG.value}"
         log_filename = os.path.join(log_dir, file_name)
         config = get_config(config_path)['logging']
