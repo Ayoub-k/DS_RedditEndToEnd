@@ -33,9 +33,22 @@ reddit:
   redirect_url: 'redirect_url'
 
 reddit_search:
-  subreddit: 'data+analyst+data+science+data+engineering+IA+machine+learing'
-  limit: 1 
+  subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
+  limit: 1000000000
   time_filter: 'week' # past hour, day, week, month, year, all
+
+s3:
+  access_key: 'ACCESS_KEY'
+  secret_key: 'SECRET_ACCESS_KEY'
+  src_endpoint_url: 'https://s3.amazonaws.com'
+  src_bucket: 'pde-data-reddit'
+  trg_endpoint_url: 'https://s3.amazonaws.com'
+  trg_bucket: ''
+
+folder_bucket:
+  comment_folder: 'comments'
+  post_folder: 'posts'
+
 
 data_path:
   path_comments: /home/ay/DataEng/projects/reddit/data/comments

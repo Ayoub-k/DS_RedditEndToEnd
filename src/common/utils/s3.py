@@ -5,7 +5,7 @@ from io import StringIO, BytesIO
 from typing import List
 import pandas as pd
 import boto3
-from src.common.constants.constants import S3FileType
+from src.common.constants.constants import FileType
 from src.common.utils.logger import Logger
 
 
@@ -32,7 +32,7 @@ class S3BucketConnector():
         )
         self._bucket = self._s3.Bucket(bucket)
 
-    def list_files_in_prefix(self, prefix:str) -> List[str]:
+    def list_files_in_prefix(self, prefix: str) -> List[str]:
         """List of file in prefix
 
         Args:
@@ -44,7 +44,7 @@ class S3BucketConnector():
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
         return files
 
-    def read_csv_to_df(self, key_object:str, encoding: str = "utf-8", sep:str = ',') -> pd.DataFrame:
+    def read_csv_to_df(self, key_object: str, encoding: str="utf-8", sep: str=',') -> pd.DataFrame:
         """Read csv file from s3 bucket into a dataframe
 
         Args:
@@ -69,14 +69,14 @@ class S3BucketConnector():
         """
         out_buffer = None
         _, file_extension = os.path.splitext(key_object)
-        if file_extension == S3FileType.CSV.value:
+        if file_extension == FileType.CSV.value:
             out_buffer = StringIO()
             dataframe.to_csv(out_buffer, index=False)
-        if file_extension == S3FileType.PARQUET.value:
+        if file_extension == FileType.PARQUET.value:
             out_buffer = BytesIO()
             dataframe.to_parquet(out_buffer, index=False)
         if out_buffer is not None:
             self._bucket.put_object(Body=out_buffer.getvalue(), Key=key_object)
             self.logger.info("dataframe is wrote in s3 bucket")
         else:
-            self.logger.error("stream data frame is null")
+            raise ValueError("Failed to write DataFrame to S3: no valid file extension found.")

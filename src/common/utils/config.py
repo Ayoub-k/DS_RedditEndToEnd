@@ -1,6 +1,6 @@
 """This file for configuration"""
 
-
+from datetime import datetime
 import yaml
 from src.common.utils.paths import Paths
 from src.common.constants.constants import PathFolder
@@ -44,3 +44,24 @@ class Config:
     def load_config():
         """Load .env"""
         load_dotenv()
+
+
+class TimeFormatter:
+    """TimeFormatter for formatting time"""
+
+    @staticmethod
+    def format_dttime_now(pattern: str) -> str:
+        """
+        Format the current datetime as a string using a specific pattern.
+
+        Args:
+            pattern (str): The format string to use for the datetime.
+
+        Returns:
+            str: The formatted datetime string.
+        """
+        try:
+            formatted_time = datetime.now().strftime(pattern)
+        except ValueError:
+            raise ValueError(f"Invalid datetime format string: {pattern}")
+        return formatted_time

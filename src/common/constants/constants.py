@@ -12,6 +12,8 @@ class FileType(Enum):
     """file type 'extenstion of file'
     """
     LOG = '.log'
+    CSV     = '.csv'
+    PARQUET = '.parquet'
 
 class PathFolder(Enum):
     """This class for storing paths folders and files
@@ -19,12 +21,6 @@ class PathFolder(Enum):
     LOGS = 'logs'
     CONFIG_YAML = 'config/config.yml'
 
-class S3FileType(Enum):
-    """Supported file types for S3BucketConnector
-    """
-
-    CSV     = '.csv'
-    PARQUET = '.parquet'
 
 class TimeFilter(Enum):
     """Storing time filter
