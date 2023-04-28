@@ -1,14 +1,28 @@
 """ file for handling paths
 """
-import os
 from pathlib import Path
 
-# Define a function to get the root path of the project
-def get_project_root() -> Path:
-    """Returns the root path of the project."""
-    return Path(__file__).parent.parent.parent.parent.absolute()
+class Paths:
+    """
+    Utility class for dealing with paths in the project.
 
-# Define a function to get the path to a file in the project
-def get_file_path(relative_path: str) -> Path:
-    """Returns the absolute path to a file in the project given its relative path."""
-    return get_project_root() / relative_path
+    Provides methods for obtaining the root path of the
+    project and the absolute path to a file in the project given its
+    relative path.
+
+    Usage:
+    ------
+    project_root = Paths.get_project_root()
+    file_path = Paths.get_file_path('path/to/file')
+    """
+    # Define a function to get the root path of the project
+    @staticmethod
+    def get_project_root() -> Path:
+        """Returns the root path of the project."""
+        return Path(__file__).parent.parent.parent.parent.absolute()
+
+    # Define a function to get the path to a file in the project
+    @staticmethod
+    def get_file_path(relative_path: str) -> Path:
+        """Returns the absolute path to a file in the project given its relative path."""
+        return Paths.get_project_root() / relative_path

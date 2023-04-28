@@ -18,3 +18,20 @@ class PathFolder(Enum):
     """
     LOGS = 'logs'
     CONFIG_YAML = 'config/config.yml'
+
+class S3FileType(Enum):
+    """Supported file types for S3BucketConnector
+    """
+
+    CSV     = '.csv'
+    PARQUET = '.parquet'
+
+class TimeFilter(Enum):
+    """Storing time filter
+    """
+    HOUR = 'hour'
+    DAY = 'day'
+    WEEK = 'week'
+    MONTH = 'month'
+    YEAR = 'year'
+    ALL = 'all'

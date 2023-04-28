@@ -1,0 +1,161 @@
+"""Class for scarping data fro reddit using paraw
+"""
+import os
+from typing import List
+from dataclasses import dataclass
+import praw
+from src.common.utils.logger import Logger
+
+@dataclass
+class RedditAuth:
+    """Represents authentication details for Reddit."""
+    client_id: str
+    client_secret: str
+    user_agent: str
+    redirect_url: str
+
+@dataclass
+class Comment:
+    """Represents a comment on a Reddit post."""
+    comment_id: str
+    post_id: str
+    body: str
+    author: str
+    score: int
+    permalink: str
+    created_utc: float
+
+@dataclass
+class Post:
+    """Represents a Reddit post."""
+    post_id: str
+    title: str
+    author: str
+    subreddit: str
+    score: int
+    upvote_ratio: float
+    num_comments: int
+    permalink: str
+    created_utc: float
+    url: str
+    selftext: str
+    subscribers: int
+    over_18: bool
+    link_flair_richtext: str
+    subreddit_name_prefixed: str
+    name: str
+    subreddit_type: str
+    ups: int
+    author_premium: bool
+    
+
+@dataclass
+class RedditSearch:
+    """Represents a filter
+    """
+    subreddit: str
+    limit: int
+    time_filter: str
+
+class RedditScraper:
+    """
+    A class for scraping data from Reddit.
+    """
+
+    def __init__(self, redditautho: RedditAuth) -> None:
+        """Create a new RedditScraper instance."""
+        self.reddit = praw.Reddit(
+            client_id=os.getenv(redditautho.client_id),
+            client_secret=os.getenv(redditautho.client_secret),
+            user_agent=os.getenv(redditautho.user_agent),
+            redirect_url=os.getenv(redditautho.redirect_url)
+        )
+        self.logger = Logger(__name__)
+
+    def get_posts(self, re_filter:RedditSearch) -> List[Post]:
+        """
+        Get the top `limit` posts from a given subreddit.
+
+        Parameters:
+        -----------
+        subreddit: str
+            The name of the subreddit to scrape.
+        limit: int
+            The maximum number of posts to scrape.
+
+        Returns:
+        --------
+        List[Post]
+            A list of Post objects, each representing a single post on the subreddit.
+        """
+        self.logger.info("started getting posts")
+        posts = []
+        for post in self.reddit.subreddit(re_filter.subreddit)\
+                    .top(limit=re_filter.limit, time_filter=re_filter.time_filter):
+            post_dict = Post(
+                post_id=post.id,
+                title=post.title,
+                author=post.author.name if post.author else '[deleted]',
+                subreddit=post.subreddit.display_name if post.subreddit else '[deleted]',
+                score=post.score,
+                upvote_ratio=post.upvote_ratio,
+                num_comments=post.num_comments,
+                permalink=post.permalink,
+                created_utc=post.created_utc,
+                url=post.url,
+                selftext=post.selftext,
+                subscribers=post.subreddit_subscribers,
+                over_18=post.over_18,
+                link_flair_richtext=post.link_flair_richtext,
+                subreddit_name_prefixed=post.subreddit_name_prefixed,
+                name=post.name,
+                subreddit_type=post.subreddit_type,
+                ups=post.ups,
+                author_premium=post.author_premium
+            )
+            posts.append(post_dict)
+        self.logger.info("finished getting posts")
+        return posts
+
+    def get_comments(self, post_id: str) -> List[Comment]:
+        """
+        Get all comments from a given post.
+
+        Parameters:
+        -----------
+        post_id: str
+            The ID of the post to scrape comments from.
+
+        Returns:
+        --------
+        List[Comment]
+            A list of Comment objects, each representing a single comment on the post.
+        """
+        comments = []
+        submission = self.reddit.submission(id=post_id)
+        submission.comments.replace_more(limit=None)
+
+        for comment in submission.comments.list():
+            comment_dict = Comment(
+                comment_id=comment.id,
+                post_id=post_id,
+                body=comment.body,
+                author=comment.author.name if comment.author else '[deleted]',
+                score=comment.score,
+                permalink=comment.permalink,
+                created_utc=comment.created_utc
+            )
+            comments.append(comment_dict)
+
+        return comments
+
+    def get_all_comments(self, post_ids: List[str]) -> List[Comment]:
+        """Get list comments for each post
+
+        Args:
+            post_ids (List[str]): list of ids post
+
+        Returns:
+            List[Comment]: list of comments
+        """
+        return [comment for post_id in post_ids for comment in self.get_comments(post_id)]

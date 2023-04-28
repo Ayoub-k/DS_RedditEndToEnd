@@ -4,29 +4,29 @@ import os
 import logging.config
 from datetime import datetime
 
-from src.common.utils.paths import get_file_path
-from src.common.utils.config import get_config
+from src.common.utils.paths import Paths
+from src.common.utils.config import Config
 from src.common.constants.constants import DateFormat, FileType, PathFolder
 
 class Logger:
     """Logger class for logging infos
     """
-    def __init__(self):
+    def __init__(self, name: str=__name__):
 
         self.__setup_logging()
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(name)
 
     def __setup_logging(self):
         """Set up configuration logger
         """
-        log_dir = get_file_path(PathFolder.LOGS.value)
+        log_dir = Paths.get_file_path(PathFolder.LOGS.value)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
-        config_path = get_file_path(PathFolder.CONFIG_YAML.value)
+        config_path = Paths.get_file_path(PathFolder.CONFIG_YAML.value)
         file_name = f"{datetime.now().strftime(DateFormat.DATE_FILE_FORMAT.value)}{FileType.LOG.value}"
         log_filename = os.path.join(log_dir, file_name)
-        config = get_config(config_path)['logging']
+        config = Config.get_config(config_path)['logging']
         config['handlers']['file_handler']['filename'] = log_filename
         logging.config.dictConfig(config)
 
