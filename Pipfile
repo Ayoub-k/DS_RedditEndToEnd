@@ -8,10 +8,13 @@ boto3 = "*"
 praw = "*"
 python-dotenv = "*"
 pandas = "*"
+numpy = "*"
+scipy = "*"
 
 [dev-packages]
 pytest = "*"
 jupyter = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.9"

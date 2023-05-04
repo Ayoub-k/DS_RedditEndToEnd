@@ -4,25 +4,25 @@ logging:
   disable_existing_loggers: False
   formatters:
     simple:
-      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+      format: '[redddit] -> %(asctime)s - %(name)s - %(levelname)s - %(message)s'
       datefmt: '%Y-%m-%d %H:%M:%S'
   handlers:
     console:
       class: logging.StreamHandler
       formatter: simple
-      level: INFO
+      level: DEBUG
       stream: ext://sys.stdout
     file_handler:
       class: logging.handlers.RotatingFileHandler
       formatter: simple
-      level: INFO
+      level: DEBUG
       filename: logs/myapp.log
       encoding: utf8
       maxBytes: 10485760 # 10 MB
       backupCount: 10 # Keep up to 10 backup files
   loggers:
     myapp:
-      level: INFO
+      level: DEBUG
       handlers: [console, file_handler]
       propagate: no
 
@@ -35,7 +35,7 @@ reddit:
 reddit_search:
   subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
   limit: 1000000000
-  time_filter: 'week' # past hour, day, week, month, year, all
+  time_filter: 'day' # past hour, day, week, month, year, all
 
 s3:
   access_key: 'ACCESS_KEY'
@@ -48,6 +48,29 @@ s3:
 folder_bucket:
   comment_folder: 'comments'
   post_folder: 'posts'
+  transformed_comments: transformed_comments
+  transformed_posts: transformed_posts
+
+
+params_comments_data:
+  droped_columns: ['permalink']
+  correct_data_types: {"created_utc": ['datetime', 's']}
+  clean_string: 
+    column: "body"
+    pattern: "[\\n\\r\\a\\s+]+|/r"
+    new_string: " "
+  threshold: 0.4
+  apply_func_to_df: 
+
+params_posts_data:
+  droped_columns: ['permalink', 'subreddit_name_prefixed', 'subreddit_type', 'selftext', 'link_flair_richtext']
+  correct_data_types: {"created_utc": ['datetime', 's']}
+  apply_func_to_df: 
+    func_name: "DataProcessor.get_value" # static function "class.func" or "func"
+    column: "link_flair_richtext"
+    new_column_name: "flair"
+  threshold: 0.4
+  clean_string:
 
 
 data_path:

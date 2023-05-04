@@ -1,0 +1,5 @@
+data leneage
+task just bash 
+travis and spinnaker for CICD
+docker, loker
+redshift Amazon Elastic Container Registry (Amazon ECR)
