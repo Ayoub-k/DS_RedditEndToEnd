@@ -25,10 +25,9 @@ if __name__ == '__main__':
     df_posts = pd.DataFrame((vars(post) for post in posts))
     # laod data to s3 bucket
     s3_bucket_src = S3BucketConnector(
-                    access_key=config['s3']['access_key'],
-                    secret_key=config['s3']['secret_key'],
                     bucket=config['s3']['src_bucket']
                 )
+
     # format data timenow to str
     DATE_NOW = TimeFormatter.format_dttime_now(
                 DateFormat.DATE_FILE_FORMAT.value
@@ -36,7 +35,7 @@ if __name__ == '__main__':
     NAME_FILE = f"{DATE_NOW}{FileType.CSV.value}"
     # save dataframe df_comments to s3 bucket in comments folder
     cmt_file = f"{config['folder_bucket']['comment_folder']}/cmt_{NAME_FILE}"
-    s3_bucket_src.write_df_to_s3(df_comments, cmt_file)
+    s3_bucket_src.save_df_to_s3(df_comments, cmt_file)
     # save dataframe df_posts to s3 bucket in posts folder
-    cmt_file = f"{config['folder_bucket']['post_folder']}/pst_{NAME_FILE}"
-    s3_bucket_src.write_df_to_s3(df_posts, cmt_file)
+    pst_file = f"{config['folder_bucket']['post_folder']}/pst_{NAME_FILE}"
+    s3_bucket_src.save_df_to_s3(df_posts, pst_file)
