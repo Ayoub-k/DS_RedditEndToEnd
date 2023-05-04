@@ -2,11 +2,13 @@
 """
 import os
 from io import StringIO, BytesIO
-from typing import List
+from typing import List, Optional
 import pandas as pd
 import boto3
+from botocore.exceptions import ClientError
 from src.common.constants.constants import FileType
 from src.common.utils.logger import Logger
+from src.common.utils.config import Config
 
 
 class S3BucketConnector():
@@ -14,25 +16,24 @@ class S3BucketConnector():
     """Class for interacting with S3 Bucket
     """
 
-    def __init__(self, access_key: str, secret_key: str, bucket: str):
+    def __init__(self, bucket: str):
         """Constructor for S3BucketConnector
 
         Args:
-            access_key (str): access key
-            secret_key (str): secret key
             bucket (str): bucket name
         """
         self.logger = Logger(__name__)
+        config = Config.get_config_yml(section_key='s3')
         self.session = boto3.Session(
-            aws_access_key_id=os.getenv(access_key),
-            aws_secret_access_key=os.getenv(secret_key)
+            aws_access_key_id=os.getenv(config['access_key']),
+            aws_secret_access_key=os.getenv(config['secret_key'])
         )
         self._s3 = self.session.resource(
             service_name = 's3'
         )
         self._bucket = self._s3.Bucket(bucket)
 
-    def list_files_in_prefix(self, prefix: str) -> List[str]:
+    def get_keys_in_prefix(self, prefix: str) -> List[str]:
         """List of file in prefix
 
         Args:
@@ -44,7 +45,7 @@ class S3BucketConnector():
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
         return files
 
-    def read_csv_to_df(self, key_object: str, encoding: str="utf-8", sep: str=',') -> pd.DataFrame:
+    def read_s3_csv_to_df(self, key_object: str, encoding: str="utf-8", sep: str=',') -> pd.DataFrame:
         """Read csv file from s3 bucket into a dataframe
 
         Args:
@@ -60,7 +61,7 @@ class S3BucketConnector():
         dataframe = pd.read_csv(data, delimiter = sep)
         return dataframe
 
-    def write_df_to_s3(self, dataframe: pd.DataFrame, key_object: str):
+    def save_df_to_s3(self, dataframe: pd.DataFrame, key_object: str):
         """write dataframe to s3 bucket
 
         Args:
@@ -80,3 +81,53 @@ class S3BucketConnector():
             self.logger.info("dataframe is wrote in s3 bucket")
         else:
             raise ValueError("Failed to write DataFrame to S3: no valid file extension found.")
+
+    def get_last_s3object_key(self, prefix: str) -> Optional[str]:
+        """
+        Returns the key of the last object in the S3 bucket with the specified prefix.
+        
+        Parameters:
+            prefix (str): The prefix to filter objects in the S3 bucket.
+        
+        Returns:
+            The key of the last object with the specified prefix, or None if no matching objects are found.
+        """
+        try:
+            objects = list(self._bucket.objects.filter(Prefix=prefix))
+            if not objects:
+                return None
+            last_object = max(objects, key=lambda obj: obj.last_modified)
+            return last_object.key
+        except ClientError as error:
+            raise ValueError(f"Failed to get last S3 object key for prefix '{prefix}'.") from error
+
+    def get_last_s3_object_key(self, prefix: str) -> str:
+        """
+        Returns the key of the most recently modified S3 object with the given prefix.
+
+        Args:
+            prefix (str): The prefix to search for.
+
+        Returns:
+            str: The key of the most recently modified object, or None if no matching objects were found.
+
+        Raises:
+            ValueError: If the specified prefix is invalid.
+        """
+
+        paginator = self._s3.meta.client.get_paginator('list_objects_v2')
+        page_iterator = paginator.paginate(Bucket=self._bucket.name, Prefix=prefix)
+
+        last_modified = None
+        last_object_key = None
+        for page in page_iterator:
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    if obj['Key'].startswith(prefix):
+                        if last_modified is None or obj['LastModified'] > last_modified:
+                            last_modified = obj['LastModified']
+                            last_object_key = obj['Key']
+
+        if last_object_key is None:
+            print(f"No matching objects found with prefix '{prefix}'")
+        return last_object_key

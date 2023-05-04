@@ -95,8 +95,8 @@ class RedditScraper:
             post_dict = Post(
                 post_id=post.id,
                 title=post.title,
-                author=post.author.name if post.author else '[deleted]',
-                subreddit=post.subreddit.display_name if post.subreddit else '[deleted]',
+                author=post.author.name if post.author else None,
+                subreddit=post.subreddit.display_name if post.subreddit else None,
                 score=post.score,
                 upvote_ratio=post.upvote_ratio,
                 num_comments=post.num_comments,
@@ -140,7 +140,7 @@ class RedditScraper:
                 comment_id=comment.id,
                 post_id=post_id,
                 body=comment.body,
-                author=comment.author.name if comment.author else '[deleted]',
+                author=comment.author.name if comment.author else None,
                 score=comment.score,
                 permalink=comment.permalink,
                 created_utc=comment.created_utc
