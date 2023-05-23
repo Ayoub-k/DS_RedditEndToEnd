@@ -15,6 +15,7 @@ sqlalchemy = "*"
 pipenv-to-requirements = "*"
 mysql-connector-python = "*"
 pymysql = "*"
+apache-airflow = "==2.6.1"
 
 [dev-packages]
 pytest = "*"
