@@ -10,6 +10,11 @@ python-dotenv = "*"
 pandas = "*"
 numpy = "*"
 scipy = "*"
+psycopg2-binary = "*"
+sqlalchemy = "*"
+pipenv-to-requirements = "*"
+mysql-connector-python = "*"
+pymysql = "*"
 
 [dev-packages]
 pytest = "*"

@@ -6,14 +6,16 @@ class Paths:
     """
     Utility class for dealing with paths in the project.
 
-    Provides methods for obtaining the root path of the
-    project and the absolute path to a file in the project given its
-    relative path.
+    Provides methods for obtaining the root path of the project and the absolute path to
+    a file in the project given its relative path.
 
     Usage:
     ------
-    project_root = Paths.get_project_root()
-    file_path = Paths.get_file_path('path/to/file')
+    To obtain the root path of the project:
+        project_root = Paths.get_project_root()
+
+    To obtain the absolute path to a file in the project given its relative path:
+        file_path = Paths.get_file_path('path/to/file')
     """
     # Define a function to get the root path of the project
     @staticmethod
@@ -22,7 +24,7 @@ class Paths:
         Returns the absolute path to the root directory of the project.
 
         Returns:
-            A pathlib.Path object representing the absolute path to the root directory
+            A pathlib.Path object represe   nting the absolute path to the root directory
             of the project.
         """
         return Path(__file__).parent.parent.parent.parent.absolute()

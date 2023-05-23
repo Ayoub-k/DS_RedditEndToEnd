@@ -1,5 +1,5 @@
 """This file for configuration"""
-
+from typing import Dict
 from datetime import datetime
 import yaml
 from src.common.utils.paths import Paths
@@ -10,7 +10,7 @@ class Config:
     """Class for getting configuration"""
 
     @staticmethod
-    def get_config(config_path: str, encoding: str = 'utf-8') -> dict:
+    def get_config(config_path: str, encoding: str = 'utf-8') -> Dict:
         """
         Read configuration from a YAML file.
 
@@ -26,11 +26,9 @@ class Config:
                 config = yaml.safe_load(config_file)
                 return config
         except FileNotFoundError:
-            print(f"File {config_path} not found.")
-            return {}
+            raise Exception(f"File {config_path} not found.") from FileNotFoundError
         except yaml.YAMLError as error:
-            print(f"Error reading configuration file {config_path}: {error}")
-            return {}
+            raise Exception(f"Error reading config file {config_path}: {error}") from yaml.YAMLError
 
 
     @staticmethod

@@ -7,7 +7,7 @@ import pandas as pd
 import boto3
 from botocore.exceptions import ClientError
 from src.common.constants.constants import FileType
-from src.common.utils.logger import Logger
+from src.common.utils.logger import logging
 from src.common.utils.config import Config
 
 
@@ -22,7 +22,6 @@ class S3BucketConnector():
         Args:
             bucket (str): bucket name
         """
-        self.logger = Logger(__name__)
         config = Config.get_config_yml(section_key='s3')
         self.session = boto3.Session(
             aws_access_key_id=os.getenv(config['access_key']),
@@ -43,9 +42,14 @@ class S3BucketConnector():
             List[str]: list of keys to get data from s3 bucket by key
         """
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
+        logging.info("getting keys from s3 bucket using prefix")
         return files
 
-    def read_s3_csv_to_df(self, key_object: str, encoding: str="utf-8", sep: str=',') -> pd.DataFrame:
+    def read_s3_csv_to_df(self,
+                          key_object: str,
+                          encoding: str="utf-8",
+                          sep: str=','
+                          ) -> pd.DataFrame:
         """Read csv file from s3 bucket into a dataframe
 
         Args:
@@ -59,6 +63,7 @@ class S3BucketConnector():
         csv_obj = self._bucket.Object(key=key_object).get().get("Body").read().decode(encoding)
         data = StringIO(csv_obj)
         dataframe = pd.read_csv(data, delimiter = sep)
+        logging.info("read csv into datafarme from s3 bucket")
         return dataframe
 
     def save_df_to_s3(self, dataframe: pd.DataFrame, key_object: str):
@@ -78,19 +83,22 @@ class S3BucketConnector():
             dataframe.to_parquet(out_buffer, index=False)
         if out_buffer is not None:
             self._bucket.put_object(Body=out_buffer.getvalue(), Key=key_object)
-            self.logger.info("dataframe is wrote in s3 bucket")
+            logging.info("dataframe is wrote in s3 bucket")
         else:
+            logging.error("Failed to write DataFrame to S3: no valid file extension found.")
             raise ValueError("Failed to write DataFrame to S3: no valid file extension found.")
 
     def get_last_s3object_key(self, prefix: str) -> Optional[str]:
         """
-        Returns the key of the last object in the S3 bucket with the specified prefix.
-        
+        Returns the key of the last object in the S3
+        bucket with the specified prefix.
+
         Parameters:
             prefix (str): The prefix to filter objects in the S3 bucket.
-        
+
         Returns:
-            The key of the last object with the specified prefix, or None if no matching objects are found.
+            The key of the last object with the specified prefix, or None
+            if no matching objects are found.
         """
         try:
             objects = list(self._bucket.objects.filter(Prefix=prefix))
@@ -109,7 +117,8 @@ class S3BucketConnector():
             prefix (str): The prefix to search for.
 
         Returns:
-            str: The key of the most recently modified object, or None if no matching objects were found.
+            str: The key of the most recently modified object, or None
+            if no matching objects were found.
 
         Raises:
             ValueError: If the specified prefix is invalid.
@@ -129,5 +138,5 @@ class S3BucketConnector():
                             last_object_key = obj['Key']
 
         if last_object_key is None:
-            print(f"No matching objects found with prefix '{prefix}'")
+            logging.warning(f"No matching objects found with prefix '{prefix}'")
         return last_object_key

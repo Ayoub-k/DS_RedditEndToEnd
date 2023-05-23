@@ -1,30 +1,30 @@
-version: 1
 logging:
   version: 1
-  disable_existing_loggers: False
   formatters:
-    simple:
-      format: '[redddit] -> %(asctime)s - %(name)s - %(levelname)s - %(message)s'
-      datefmt: '%Y-%m-%d %H:%M:%S'
+    simpleFormatter:
+      format: "[%(asctime)s] - %(name)s - %(levelname)s - %(message)s"
   handlers:
-    console:
+    consoleHandler:
       class: logging.StreamHandler
-      formatter: simple
-      level: DEBUG
+      level: INFO
+      formatter: simpleFormatter
       stream: ext://sys.stdout
-    file_handler:
-      class: logging.handlers.RotatingFileHandler
-      formatter: simple
+    fileHandler:
+      class: logging.handlers.TimedRotatingFileHandler
       level: DEBUG
-      filename: logs/myapp.log
-      encoding: utf8
-      maxBytes: 10485760 # 10 MB
-      backupCount: 10 # Keep up to 10 backup files
+      filename: logs1.log
+      when: midnight
+      interval: 1
+      backupCount: 30
+      formatter: simpleFormatter
   loggers:
-    myapp:
+    myLogger:
       level: DEBUG
-      handlers: [console, file_handler]
+      handlers: [consoleHandler, fileHandler]
       propagate: no
+  root:
+    level: DEBUG
+    handlers: [consoleHandler, fileHandler]
 
 reddit:
   client_id: 'client_id'
@@ -34,7 +34,7 @@ reddit:
 
 reddit_search:
   subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
-  limit: 1000000000
+  limit: 20
   time_filter: 'day' # past hour, day, week, month, year, all
 
 s3:
@@ -61,6 +61,7 @@ params_comments_data:
     new_string: " "
   threshold: 0.4
   apply_func_to_df: 
+  rename_columns: {'score': 'score_cmt', 'created_utc': 'created_utc_cmt'}
 
 params_posts_data:
   droped_columns: ['permalink', 'subreddit_name_prefixed', 'subreddit_type', 'selftext', 'link_flair_richtext']
@@ -72,15 +73,35 @@ params_posts_data:
   threshold: 0.4
   clean_string:
 
+postgresql: postgresql
 
-data_path:
-  path_comments: /home/ay/DataEng/projects/reddit/data/comments
-  path_posts: /home/ay/DataEng/projects/reddit/data/posts
-  path_tmp: /home/ay/DataEng/projects/reddit/tmp
-  path_project: /home/ay/DataEng/projects/reddit/
+mysql: mysql
+
+mysql_tables:
+  posts: Posts
+  comments: Comments
+
+
+redshift:
+  redshift_host: redshift_host
+  redshift_port: redshift_port
+  redshift_user: redshift_user
+  redshift_password: redshift_password
+  redshift_db: redshift_db
+
+redshift_tables:
+  posts: posts
+  comments: comments
+  fact: fact
 
 names_files_etl:
   extract: extract.py
   load: load.py
   transform: transform.py
 
+params_load:
+  droped_columns_cmt: ['score_cmt', 'post_id']
+  droped_columns_pst: ['ups', 'subscribers', 'num_comments', 'upvote_ratio', 'score']
+  merged_columns_cmt: ['comment_id', 'post_id', 'score_cmt']
+  merged_columns_pst: ['post_id', 'score', 'upvote_ratio', 'num_comments', 'subscribers', 'ups']
+  merge_key: post_id
