@@ -34,7 +34,7 @@ reddit:
 
 reddit_search:
   subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
-  limit: 20
+  limit: 2
   time_filter: 'day' # past hour, day, week, month, year, all
 
 s3:
@@ -105,3 +105,7 @@ params_load:
   merged_columns_cmt: ['comment_id', 'post_id', 'score_cmt']
   merged_columns_pst: ['post_id', 'score', 'upvote_ratio', 'num_comments', 'subscribers', 'ups']
   merge_key: post_id
+
+config_time_files:
+  time: 2400
+  epoch: 5

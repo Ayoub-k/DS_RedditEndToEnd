@@ -3,7 +3,7 @@
 from typing import List
 from dataclasses import dataclass, field
 from src.common.utils.config import Config
-from src.common.utils.s3 import S3BucketConnector
+from src.common.utils.s3 import S3BucketConnector, S3BucketConnectorV2
 from src.common.utils.db_connector import RedshiftConnector
 from src.common.utils.logger import logging
 
@@ -17,6 +17,8 @@ class ParamsLoad:
     merged_columns_pst: List[str] = field(default_factory=list)
     merge_key: str=''
 
+
+
 if __name__ == '__main__':
     # activate .env
     Config.load_config()
@@ -26,16 +28,19 @@ if __name__ == '__main__':
     params = ParamsLoad(**config['params_load'])
     # get extracted data from s3 bucket
     logging.info("staring load data into redshift is started")
-    s3_bucket_src = S3BucketConnector(bucket=config['s3']['src_bucket'])
+    s3_bucket_src = S3BucketConnectorV2(bucket=config['s3']['src_bucket'])
 
     logging.info("get transormed data from s3 buecket")
     # get Posts dataset
     prefix_pst_file = f"{config['folder_bucket']['transformed_posts']}/trasf_pst_"
+
+    # get the new file in s3 bucket
     file_key = s3_bucket_src.get_last_s3_object_key(prefix_pst_file)
     df_pst = s3_bucket_src.read_s3_csv_to_df(file_key)
 
     # get Comments dataset
     prefix_cmt_file = f"{config['folder_bucket']['transformed_comments']}/trasf_cmt_"
+
     file_key = s3_bucket_src.get_last_s3_object_key(prefix_cmt_file)
     df_cmt = s3_bucket_src.read_s3_csv_to_df(file_key)
 

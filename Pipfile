@@ -16,6 +16,7 @@ pipenv-to-requirements = "*"
 mysql-connector-python = "*"
 pymysql = "*"
 apache-airflow = "==2.6.1"
+data-engineer-project = {editable = true, path = "."}
 
 [dev-packages]
 pytest = "*"

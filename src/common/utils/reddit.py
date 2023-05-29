@@ -83,9 +83,10 @@ class RedditScraper:
             List[Post]: A list of Post objects, each representing a single post on the subreddit.
 
         Example:
-            reddit_search = RedditSearch(subreddit='python', limit=10)
-            data_wrangler = DataWrangler()
-            posts = data_wrangler.get_posts(re_filter=reddit_search)
+            - reddit_search = RedditSearch(subreddit='python', limit=10)
+            - redditautho = {'client_id': 'ddd', 'client_secret': 'dd'}
+            - scraper = RedditScraper(**redditautho)
+            - posts = scraper.get_posts(re_filter=reddit_search)
         """
         logging.info("scaping posts is started")
         posts = []
@@ -129,7 +130,7 @@ class RedditScraper:
         Example:
             get_comments("abc123")
         """
-        logging.info("scaping comments is started")
+        logging.info(f"scaping comments is started for post{post_id}")
         comments = []
         submission = self._reddit.submission(id=post_id)
         submission.comments.replace_more(limit=None)
@@ -144,7 +145,7 @@ class RedditScraper:
                 created_utc=comment.created_utc
             )
             comments.append(comment_dict)
-        logging.info("finished getting comments")
+        logging.info(f"finished getting comments for post {post_id}")
         return comments
 
     def get_all_comments(self, post_ids: List[str]) -> List[Comment]:

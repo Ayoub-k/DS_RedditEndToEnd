@@ -1,11 +1,14 @@
 """Transform data
 """
+import sys
+import time
 from typing import Tuple, List, Union, Dict
 from dataclasses import dataclass, field
 from src.common.utils.datawrangler import DataWrangler
 from src.common.utils.config import Config, TimeFormatter
-from src.common.utils.s3 import S3BucketConnector
+from src.common.utils.s3 import S3BucketConnector, S3BucketConnectorV2
 from src.common.constants.constants import DateFormat, FileType
+from src.common.utils.logger import logging
 
 
 @dataclass
@@ -18,18 +21,54 @@ class ParamsWrangleData:
     apply_func_to_df: Dict[str, str] = field(default_factory=dict)
     rename_columns: Dict[str, str] = field(default_factory=dict)
 
+def check_file_added_to_s3(counter_limit: int, sleep_time: int,
+                           prefix: str, s3_bucket: S3BucketConnectorV2
+                           ) -> None:
+    """checks if a file is added this week or not
+
+    Args:
+        counter_limit (int): _description_
+        sleep_time (int): _description_
+        prefix (str): _description_
+        s3_bucket (S3BucketConnector): _description_
+    """
+    counter = 0
+    is_added = s3_bucket.check_file_added_to_s3_this_week(prefix)
+    while not is_added:
+        is_added = s3_bucket.check_file_added_to_s3_this_week(prefix)
+        logging.info(f"Checks if a new file is added this week: {is_added}")
+        counter += 1
+        time.sleep(sleep_time)
+
+        if counter > counter_limit:
+            logging.info(f"No file is added this week for the prefix: {prefix}")
+            sys.exit(1)
+
 if __name__ == '__main__':
     Config.load_config()
     config = Config.get_config_yml()
 
     # get extracted data from s3 bucket
-    s3_bucket_src = S3BucketConnector(bucket=config['s3']['src_bucket'])
+    s3_bucket_src = S3BucketConnectorV2(bucket=config['s3']['src_bucket'])
     # get Comments dataset
     prefix_cmt_file = f"{config['folder_bucket']['comment_folder']}/cmt_"
+    # check is file in s3 bucket is added this week
+    
+    check_file_added_to_s3(config['config_time_files']['epoch'],
+                           config['config_time_files']['time'],
+                           prefix_cmt_file,
+                           s3_bucket_src
+                        )
     file_key = s3_bucket_src.get_last_s3_object_key(prefix_cmt_file)
     df_cmt = s3_bucket_src.read_s3_csv_to_df(file_key)
     # get Comments dataset
     prefix_pst_file = f"{config['folder_bucket']['post_folder']}/pst_"
+    # check is file in s3 bucket is added this week
+    check_file_added_to_s3(config['config_time_files']['epoch'],
+                           config['config_time_files']['time'],
+                           prefix_pst_file,
+                           s3_bucket_src
+                        )
     file_key = s3_bucket_src.get_last_s3_object_key(prefix_pst_file)
     df_pst = s3_bucket_src.read_s3_csv_to_df(file_key)
 
@@ -50,6 +89,7 @@ if __name__ == '__main__':
     df_wrgle_cmt.drop_columns(config_cmt.droped_columns)
     # rename columns
     df_wrgle_cmt.rename_columns(config_cmt.rename_columns)
+
     # wrangle data posts
     config_pst = ParamsWrangleData(**config["params_posts_data"])
     df_wrgle_pst = DataWrangler(data=df_pst)
