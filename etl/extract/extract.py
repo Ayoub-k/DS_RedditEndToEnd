@@ -4,7 +4,7 @@
 import pandas as pd
 from src.common.utils.config import Config, TimeFormatter
 from src.common.utils.reddit import RedditScraper, RedditAuth, RedditSearch
-from src.common.utils.s3 import S3BucketConnector, S3BucketConnectorV2
+from src.common.utils.s3 import S3BucketConnector
 from src.common.constants.constants import DateFormat, FileType
 
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # dataframe posts
     df_posts = pd.DataFrame((vars(post) for post in posts))
     # laod data to s3 bucket
-    s3_bucket_src = S3BucketConnectorV2(
+    s3_bucket_src = S3BucketConnector(
                     bucket=config['s3']['src_bucket']
                 )
 

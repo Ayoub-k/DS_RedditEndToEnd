@@ -13,9 +13,9 @@ class RedshiftConnector:
     Initializes the RedshiftConnector with connection details.
 
     Example:
-        connector = RedshiftConnector(key_config='redshift')
-        connector.execute_query('SELECT * FROM my_table')
-        connector.disconnect()
+        - connector = RedshiftConnector(key_config='redshift')
+        - connector.execute_query('SELECT * FROM my_table')
+        - connector.disconnect()
     """
 
     def __init__(self, key_config: str="postgresql"):

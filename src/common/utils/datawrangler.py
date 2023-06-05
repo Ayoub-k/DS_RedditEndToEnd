@@ -189,7 +189,7 @@ class DataWrangler:
 
 
     def correct_data_types(self,
-                           column_data_types: Dict[str, Union[type, Union[Tuple[str, str], List[str]]]
+                        column_data_types: Dict[str, Union[type, Union[Tuple[str, str], List[str]]]
                         ]) -> None:
         """
         Correct the data types of columns in the DataFrame.

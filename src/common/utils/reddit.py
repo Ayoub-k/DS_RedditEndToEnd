@@ -5,6 +5,7 @@ from typing import List
 from dataclasses import dataclass
 import praw
 from src.common.utils.logger import logging
+from src.common.utils.utils import TimeUtils
 
 @dataclass
 class RedditAuth:
@@ -57,6 +58,7 @@ class RedditSearch:
     limit: int = 0
     time_filter: str = ''
 
+
 class RedditScraper:
     """
     A class for scraping data from Reddit.
@@ -89,9 +91,14 @@ class RedditScraper:
             - posts = scraper.get_posts(re_filter=reddit_search)
         """
         logging.info("scaping posts is started")
+        intvl = TimeUtils.get_time_interval(re_filter.time_filter)
+        logging.info(f"get posts for this period {re_filter.time_filter} in this interval {intvl}")
         posts = []
         for post in self._reddit.subreddit(re_filter.subreddit)\
-                    .top(limit=re_filter.limit, time_filter=re_filter.time_filter):
+                    .top(limit=re_filter.limit, time_filter='all'):
+
+            if re_filter.time_filter != 'all' and not intvl[0] <= TimeUtils.seconds_to_datetime(post.created_utc) <= intvl[1]:
+                continue
             post_dict = Post(
                 post_id=post.id,
                 title=post.title,
@@ -130,7 +137,7 @@ class RedditScraper:
         Example:
             get_comments("abc123")
         """
-        logging.info(f"scaping comments is started for post{post_id}")
+        logging.info(f"scaping comments is started for post {post_id}")
         comments = []
         submission = self._reddit.submission(id=post_id)
         submission.comments.replace_more(limit=None)

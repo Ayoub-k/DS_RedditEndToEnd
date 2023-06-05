@@ -22,7 +22,7 @@ class ParamsWrangleData:
     rename_columns: Dict[str, str] = field(default_factory=dict)
 
 def check_file_added_to_s3(counter_limit: int, sleep_time: int,
-                           prefix: str, s3_bucket: S3BucketConnectorV2
+                           prefix: str, s3_bucket: S3BucketConnector
                            ) -> None:
     """checks if a file is added this week or not
 
@@ -49,11 +49,10 @@ if __name__ == '__main__':
     config = Config.get_config_yml()
 
     # get extracted data from s3 bucket
-    s3_bucket_src = S3BucketConnectorV2(bucket=config['s3']['src_bucket'])
+    s3_bucket_src = S3BucketConnector(bucket=config['s3']['src_bucket'])
     # get Comments dataset
     prefix_cmt_file = f"{config['folder_bucket']['comment_folder']}/cmt_"
-    # check is file in s3 bucket is added this week
-    
+    # check is file in s3 bucket is added this week 
     check_file_added_to_s3(config['config_time_files']['epoch'],
                            config['config_time_files']['time'],
                            prefix_cmt_file,

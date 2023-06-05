@@ -3,7 +3,7 @@
 from typing import List
 from dataclasses import dataclass, field
 from src.common.utils.config import Config
-from src.common.utils.s3 import S3BucketConnector, S3BucketConnectorV2
+from src.common.utils.s3 import S3BucketConnector
 from src.common.utils.db_connector import RedshiftConnector
 from src.common.utils.logger import logging
 
@@ -18,7 +18,6 @@ class ParamsLoad:
     merge_key: str=''
 
 
-
 if __name__ == '__main__':
     # activate .env
     Config.load_config()
@@ -28,7 +27,7 @@ if __name__ == '__main__':
     params = ParamsLoad(**config['params_load'])
     # get extracted data from s3 bucket
     logging.info("staring load data into redshift is started")
-    s3_bucket_src = S3BucketConnectorV2(bucket=config['s3']['src_bucket'])
+    s3_bucket_src = S3BucketConnector(bucket=config['s3']['src_bucket'])
 
     logging.info("get transormed data from s3 buecket")
     # get Posts dataset
@@ -68,8 +67,6 @@ if __name__ == '__main__':
 # staging.insert_dataframe(config['mysql_tables']['posts'], df_pst)
 # staging.insert_dataframe(config['mysql_tables']['comments'], df_cmt)
 # staging.close()
-
-
 
 # # data posts
 # columns_posts = [

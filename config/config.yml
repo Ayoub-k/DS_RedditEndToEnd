@@ -35,7 +35,7 @@ reddit:
 reddit_search:
   subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
   limit: 2
-  time_filter: 'day' # past hour, day, week, month, year, all
+  time_filter: 'week' # past hour, day, week, month, year, all
 
 s3:
   access_key: 'ACCESS_KEY'

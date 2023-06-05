@@ -1,16 +1,20 @@
 """This file for orchestration The ETL
 """
-from datetime import datetime, timedelta
+from datetime import timedelta
+import pendulum
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
-import sys
-sys.path.append('/home/ay/DataEng/projects/DS_RedditEndToEnd/etl/extract')
+from datahub_provider.entities import Dataset, Urn
+
+# reddit_data = File(url="s3://reddit-data")
+# transformed_data = File(url="s3://transformed-data")
+# redshift_table = Database(conn_id="redshift_conn_id", table="my_table")
 
 default_args = {
     'owner': 'Ayooub Qyoubi',
     'depends_on_past': False,
-    'start_date': datetime(2023, 1, 1),
-    'retries': 3,
+    'start_date': pendulum.datetime(2023, 1, 1, tz="UTC"),
+    'retries': 2,
     'retry_delay': timedelta(minutes=5)
 }
 
@@ -22,63 +26,29 @@ dag = DAG(
     catchup=False
 )
 
-def generate_lineage(context):
-    """for generate data lineage for each steps in ETL
 
-    Args:
-        context (_type_): _description_
-    """
-    task_instance = context['task_instance']
-    task_id = task_instance.task_id
-    execution_date = task_instance.execution_date
-
-    lineage_info = f'Task ID: {task_id}, Execution Date: {execution_date}'
-    task_instance.xcom_push(key='lineage_info', value=lineage_info)
-
-# Define each step in the ETL process as a BashOperator executing the respective .py file
-
-# step0 = BashOperator(
-#     task_id='step0',
-#     bash_command='export PYTHONPATH=/home/ay/DataEng/projects/DS_RedditEndToEnd/',
-#     dag=dag
-#     # provide_context=True,
-#     # on_success_callback=generate_lineage
-# )
-
-
-step1 = BashOperator(
+extract_data = BashOperator(
     task_id='step1',
     bash_command='python /home/ay/DataEng/projects/DS_RedditEndToEnd/etl/extract/extract.py',
-    dag=dag
-    # provide_context=True,
-    # on_success_callback=generate_lineage
+    dag=dag,
+    inlets=[Dataset("snowflake", "mydb.schema.tableD")],
+    outlets=[Dataset("snowflake", "mydb.schema.tableD")]
 )
 
-step2 = BashOperator(
+transform_data = BashOperator(
     task_id='step2',
     bash_command='python /home/ay/DataEng/projects/DS_RedditEndToEnd/etl/transform/transform.py',
-    dag=dag
-    # provide_context=True,
-    # on_success_callback=generate_lineage
+    dag=dag,
+    inlets=[Dataset("snowflake", "mydb.schema.tableD")],
+    outlets=[Dataset("snowflake", "mydb.schema.tableD")]
 )
 
-step3 = BashOperator(
+load_data = BashOperator(
     task_id='step3',
     bash_command='python /home/ay/DataEng/projects/DS_RedditEndToEnd/etl/load/load.py',
-    dag=dag
-    # provide_context=True,
-    # on_success_callback=generate_lineage
+    dag=dag,
+    inlets=[Dataset("snowflake", "mydb.schema.tableD")],
+    outlets=[Dataset("snowflake", "mydb.schema.tableD")]
 )
 
-# step4 = BashOperator(
-#     task_id='step4',
-#     bash_command='python /path/to/step4.py',
-#     dag=dag,
-#     provide_context=True,
-#     on_success_callback=generate_lineage
-# )
-
-# Set task dependencies
-
-# step0 >> 
-step1 >> step2 >> step3
+extract_data >> transform_data >> load_data

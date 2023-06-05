@@ -304,7 +304,7 @@ class S3BucketConnectorV2:
         last_object = self.get_lastobject_s3bucket(prefix)
         if last_object is None:
             return False
-
+        logging.info(last_object)
         current_week_start = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
         current_week_end = current_week_start + timedelta(days=6)
 
@@ -328,6 +328,7 @@ class S3BucketConnectorV2:
 
         paginator = self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix)
         page_iterator = paginator.paginate(Bucket=self.bucket_name.name, Prefix=prefix)
+
 
         last_modified = None
         last_object_key = None
