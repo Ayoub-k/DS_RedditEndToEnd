@@ -11,6 +11,7 @@ COPY Pipfile Pipfile.lock setup.py .env README.md   /app/
 RUN pip install pipenv && \
     pipenv install --system --deploy --ignore-pipfile
 
+
 # Copy the necessary folders from the project to the working directory
 COPY etl/ /app/etl/
 COPY pipelines/ /app/pipelines/
@@ -20,11 +21,21 @@ COPY config/ /app/config/
 COPY docs/  /app/docs
 COPY logs/  /app/logs
 
+# Create build for the project
+RUN pipenv install -e .
+
 # Expose the necessary ports
 EXPOSE 8080
 
-# Set the entrypoint command
-ENTRYPOINT ["airflow"]
+# Copy the entrypoint script
+COPY airflowconfig.sh /app/airflowconfig.sh
+# Set the environment variable for Airflow home directory
+ENV AIRFLOW_HOME=/app/airflow
+ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
 
-# Set the default command for the container
-CMD ["webserver"]
+COPY pipelines/ /app/airflow/dags
+# Set the entrypoint script as executable
+RUN chmod +x /app/airflowconfig.sh
+
+# Set the entry point command
+CMD ["/app/airflowconfig.sh"]

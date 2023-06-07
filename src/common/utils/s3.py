@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 from src.common.constants.constants import FileType
 from src.common.utils.logger import logging
 from src.common.utils.config import Config
-
+from src.common.utils.utils import TimeUtils
 
 class S3BucketConnector:
 
@@ -61,11 +61,15 @@ class S3BucketConnector:
         Returns:
             DataFrame: return dataframe
         """
-        csv_obj = self._bucket.Object(key=key_object).get().get("Body").read().decode(encoding)
-        data = StringIO(csv_obj)
-        dataframe = pd.read_csv(data, delimiter = sep)
-        logging.info("read csv into datafarme from s3 bucket")
-        return dataframe
+        try:
+            csv_obj = self._bucket.Object(key=key_object).get()["Body"].read().decode(encoding)
+            data = StringIO(csv_obj)
+            dataframe = pd.read_csv(data, delimiter=sep)
+            logging.info("CSV file read into DataFrame from S3 bucket")
+            return dataframe
+        except Exception as error:
+            logging.error(f"Error reading CSV from S3 bucket: {error}")
+            return pd.DataFrame()  # Return an empty DataFrame in case of error
 
     def save_df_to_s3(self, dataframe: pd.DataFrame, key_object: str):
         """write dataframe to s3 bucket
@@ -153,12 +157,13 @@ class S3BucketConnector:
             logging.warning(f"No matching objects found with prefix '{prefix}'")
         return last_object_key
 
-    def check_file_added_to_s3_this_week(self, prefix: str) -> bool:
+    def check_time_file(self, prefix: str) -> bool:
         """
         Check if the last file added to the S3 bucket with the given prefix is from the current week
 
         Args:
             prefix (str): The prefix of the file in the S3 bucket.
+            interval (str): The interval, such as 'week', 'day', 'hour', or 'month'.
 
         Returns:
             bool: True if the last file added is from the current week, False otherwise.
@@ -166,12 +171,11 @@ class S3BucketConnector:
         file_obj = self.get_lastobject_s3bucket(prefix)
         if file_obj is None:
             return False
-
-        current_week_start = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
-        current_week_end = current_week_start + timedelta(days=6)
+        config = Config.get_config_yml(section_key='reddit_search')['time_filter']
+        start_time, end_time = TimeUtils.get_time_interval(config)
 
         last_modified_date = file_obj['LastModified'].date()
-        return current_week_start <= last_modified_date <= current_week_end
+        return start_time.date() <= last_modified_date <= end_time.date()
 
 
 class S3BucketConnectorV2:

@@ -94,10 +94,10 @@ redshift_tables:
   comments: comments
   fact: fact
 
-names_files_etl:
-  extract: extract.py
-  load: load.py
-  transform: transform.py
+path_etl_reddit:
+  extract: etl/extract/extract.py
+  load: etl/load/load.py
+  transform: etl/transform/transform.py
 
 params_load:
   droped_columns_cmt: ['score_cmt', 'post_id']
@@ -107,5 +107,6 @@ params_load:
   merge_key: post_id
 
 config_time_files:
-  time: 2400
-  epoch: 5
+  time: 240
+  epoch: 2
+

@@ -1,0 +1,10 @@
+version: '3'
+services:
+  reddit:
+    build:
+      context: .
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+    ports:
+      - 8084:8080

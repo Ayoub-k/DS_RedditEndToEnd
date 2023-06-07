@@ -1,5 +1,6 @@
 """ ETL- Load Data
 """
+
 from typing import List
 from dataclasses import dataclass, field
 from src.common.utils.config import Config
@@ -7,6 +8,28 @@ from src.common.utils.s3 import S3BucketConnector
 from src.common.utils.db_connector import RedshiftConnector
 from src.common.utils.logger import logging
 
+# def check_file_added_to_s3(counter_limit: int, sleep_time: int,
+#                            prefix: str, s3_bucket: S3BucketConnector
+#                            ) -> bool:
+#     """checks if a file is added this week or not
+
+#     Args:
+#         counter_limit (int): _description_
+#         sleep_time (int): _description_
+#         prefix (str): _description_
+#         s3_bucket (S3BucketConnector): _description_
+#     """
+#     counter = 0
+#     is_added = s3_bucket.check_time_file(prefix)
+#     while not is_added:
+#         is_added = s3_bucket.check_time_file(prefix)
+#         logging.info(f"Checks if a new file is added this week: {is_added}")
+#         counter += 1
+#         time.sleep(sleep_time)
+
+#         if counter > counter_limit:
+#             logging.info(f"No file is added this time for the prefix: {prefix}")
+#             return False
 
 @dataclass
 class ParamsLoad:
@@ -23,6 +46,7 @@ if __name__ == '__main__':
     Config.load_config()
     # load config
     config = Config.get_config_yml()
+    logging.info("load process is starting")
     # params for loading data
     params = ParamsLoad(**config['params_load'])
     # get extracted data from s3 bucket
@@ -32,33 +56,37 @@ if __name__ == '__main__':
     logging.info("get transormed data from s3 buecket")
     # get Posts dataset
     prefix_pst_file = f"{config['folder_bucket']['transformed_posts']}/trasf_pst_"
-
-    # get the new file in s3 bucket
+    IS_FILE_IN_S3 = s3_bucket_src.check_time_file(prefix_pst_file)
+     # get the new file in s3 bucket
     file_key = s3_bucket_src.get_last_s3_object_key(prefix_pst_file)
+
     df_pst = s3_bucket_src.read_s3_csv_to_df(file_key)
+    if IS_FILE_IN_S3 and not df_pst.empty:
+        # get Comments dataset
+        prefix_cmt_file = f"{config['folder_bucket']['transformed_comments']}/trasf_cmt_"
+        IS_FILE_IN_S3 = s3_bucket_src.get_last_s3_object_key(prefix_cmt_file)
+        file_key = s3_bucket_src.get_last_s3_object_key(prefix_cmt_file)
+        df_cmt = s3_bucket_src.read_s3_csv_to_df(file_key)
+        if IS_FILE_IN_S3 and not df_pst.empty:
+            # pushing data to redshift
+            fact_data = df_cmt[params.merged_columns_cmt]\
+                            .merge(
+                                df_pst[params.merged_columns_pst],
+                                on=params.merge_key
+                        )
+            df_cmt.drop(columns = params.droped_columns_cmt, inplace=True)
+            df_pst.drop(columns = params.droped_columns_pst, inplace=True)
+            # load data to redshift
+            redshift = RedshiftConnector('postgresql')
+            tables = config['redshift_tables']
+            redshift.load_data_from_df(df_pst, tables['posts'])
+            redshift.load_data_from_df(df_cmt, tables['comments'])
+            redshift.load_data_from_df(fact_data, tables['fact'])
 
-    # get Comments dataset
-    prefix_cmt_file = f"{config['folder_bucket']['transformed_comments']}/trasf_cmt_"
-
-    file_key = s3_bucket_src.get_last_s3_object_key(prefix_cmt_file)
-    df_cmt = s3_bucket_src.read_s3_csv_to_df(file_key)
-
-    # pushing data to redshift
-    fact_data = df_cmt[params.merged_columns_cmt]\
-                    .merge(
-                        df_pst[params.merged_columns_pst],
-                        on=params.merge_key
-                )
-    df_cmt.drop(columns = params.droped_columns_cmt, inplace=True)
-    df_pst.drop(columns = params.droped_columns_pst, inplace=True)
-    # load data to redshift
-    redshift = RedshiftConnector('postgresql')
-    tables = config['redshift_tables']
-    redshift.load_data_from_df(df_pst, tables['posts'])
-    redshift.load_data_from_df(df_cmt, tables['comments'])
-    redshift.load_data_from_df(fact_data, tables['fact'])
-
-    redshift.disconnect()
+            redshift.disconnect()
+            logging.info("load process is finished")
+    else:
+        logging.info("we don't have any data to push on this time")
 
 # # storing transformed data into a staging area mysql DataBase
 # staging = MySQLConnector("mysql")
