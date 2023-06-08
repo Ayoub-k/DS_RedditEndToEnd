@@ -26,9 +26,9 @@ class Config:
                 config = yaml.safe_load(config_file)
                 return config
         except FileNotFoundError:
-            raise Exception(f"File {config_path} not found.") from FileNotFoundError
+            raise FileNotFoundError(f"File {config_path} not found.") from FileNotFoundError
         except yaml.YAMLError as error:
-            raise Exception(f"Error reading config file {config_path}: {error}") from yaml.YAMLError
+            raise yaml.YAMLError(f"Error reading config file {config_path}: {error}") from yaml.YAMLError
 
 
     @staticmethod

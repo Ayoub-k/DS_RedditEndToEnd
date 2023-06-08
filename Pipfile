@@ -22,6 +22,7 @@ acryl-datahub = "*"
 uvicorn = "*"
 fastapi = "*"
 duckdb = "*"
+coverage = "*"
 
 [dev-packages]
 pytest = "*"
