@@ -8,19 +8,21 @@ from src.common.utils.paths import Paths
 from src.common.utils.config import Config, TimeFormatter
 from src.common.constants.constants import DateFormat, FileType, PathFolder
 
+def configure_logs() -> dict:
+    """Configure logging"""
+    # Creating folder logs if not exist
+    log_dir = Paths.get_project_root() / PathFolder.LOGS.value
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
-# Creating folder logs if not exist
-log_dir = Paths.get_project_root() / PathFolder.LOGS.value
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-
-date_now = TimeFormatter.format_dttime_now(DateFormat.DATE_FILE_FORMAT.value)
-file_name = f"{date_now}{FileType.LOG.value}"
-log_filename = os.path.join(log_dir, file_name)
-# Config logging
-config = Config.get_config_yml('logging')
-config['handlers']['fileHandler']['filename'] = log_filename
-logging.config.dictConfig(config)
+    date_now = TimeFormatter.format_dttime_now(DateFormat.DATE_FILE_FORMAT.value)
+    file_name = f"{date_now}{FileType.LOG.value}"
+    log_filename = os.path.join(log_dir, file_name)
+    # Config logging
+    config = Config.get_config_yml('logging')
+    config['handlers']['fileHandler']['filename'] = log_filename
+    return config
+logging.config.dictConfig(configure_logs())
 
 # class Logger:
 #     """Logger class for logging infos
