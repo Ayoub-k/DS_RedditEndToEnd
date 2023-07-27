@@ -1,7 +1,7 @@
 """Class for scarping data fro reddit using paraw
 """
 import os
-from typing import List
+from typing import List, Union
 from dataclasses import dataclass
 import praw
 from src.common.utils.logger import logging
@@ -55,7 +55,7 @@ class RedditSearch:
     """Represents a filter
     """
     subreddit: str = ''
-    limit: int = 0
+    limit: Union[int, str] = None
     time_filter: str = ''
 
 
@@ -74,12 +74,12 @@ class RedditScraper:
         )
         logging.info("Scapping in Reddit is started")
 
-    def get_posts(self, re_filter:RedditSearch) -> List[Post]:
+    def get_posts(self, search_filter:RedditSearch) -> List[Post]:
         """
         Get the top posts from a given subreddit based on the specified filter.
 
         Args:
-            re_filter (RedditSearch): The RedditSearch object representing the search filter.
+            search_filter (RedditSearch): The RedditSearch object representing the search filter.
 
         Returns:
             List[Post]: A list of Post objects, each representing a single post on the subreddit.
@@ -88,17 +88,18 @@ class RedditScraper:
             - reddit_search = RedditSearch(subreddit='python', limit=10)
             - redditautho = {'client_id': 'ddd', 'client_secret': 'dd'}
             - scraper = RedditScraper(**redditautho)
-            - posts = scraper.get_posts(re_filter=reddit_search)
+            - posts = scraper.get_posts(search_filter=reddit_search)
         """
         logging.info("scaping posts is started")
-        intvl = TimeUtils.get_time_interval(re_filter.time_filter)
-        logging.info(f"get posts for this period {re_filter.time_filter} in this interval {intvl}")
+        intvl = TimeUtils.get_time_interval(search_filter.time_filter)
+        logging.info(f"get posts for this period {search_filter.time_filter} in this interval {intvl}")
         posts = []
-        for post in self._reddit.subreddit(re_filter.subreddit)\
-                    .top(limit=re_filter.limit, time_filter='all'):
+        for post in self._reddit.subreddit(search_filter.subreddit)\
+                    .top(time_filter=search_filter.time_filter, limit=search_filter.limit):
 
-            if re_filter.time_filter != 'all' and not intvl[0] <= TimeUtils.seconds_to_datetime(post.created_utc) <= intvl[1]:
+            if not intvl[0] <= TimeUtils.seconds_to_datetime(post.created_utc) <= intvl[1]:
                 continue
+
             post_dict = Post(
                 post_id=post.id,
                 title=post.title,
@@ -169,3 +170,16 @@ class RedditScraper:
             get_all_comments(["post1", "post2", "post3"])
         """
         return [comment for post_id in post_ids for comment in self.get_comments(post_id)]
+
+# if __name__ == '__main__':
+#     from src.common.utils.config import Config
+#     Config.load_config()
+#     # load configuration from config.yml
+#     config = Config.get_config_yml()
+#     # Create redditScraper
+#     scraper = RedditScraper(RedditAuth(**config['reddit']))
+#     print(scraper._reddit)
+#     search = RedditSearch(subreddit='sports', limit=None, time_filter='month')
+#     # Call the method being tested
+#     result = scraper.get_posts(search)
+#     print(len(result))

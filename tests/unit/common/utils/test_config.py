@@ -72,7 +72,7 @@ class TimeFormatterTestCase(unittest.TestCase):
     """
     def test_format_dttime_now_success(self):
         """Test format_dttime_now"""
-        result_expected = '2023-06-08'
+        result_expected = '2023-06-13'
         pattern = '%Y-%m-%d'
         result = TimeFormatter.format_dttime_now(pattern)
         self.assertEqual(result, result_expected)

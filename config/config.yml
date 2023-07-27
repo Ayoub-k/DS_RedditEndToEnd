@@ -34,7 +34,7 @@ reddit:
 
 reddit_search:
   subreddit: 'data+analyst+science+engineering+IA+machine+deep+learing+chatgpt+big+data'
-  limit: 2
+  limit:
   time_filter: 'week' # past hour, day, week, month, year, all
 
 s3:
@@ -74,6 +74,7 @@ params_posts_data:
   clean_string:
 
 postgresql: postgresql
+redshift: REDSHIFT
 
 mysql: mysql
 
@@ -82,12 +83,12 @@ mysql_tables:
   comments: Comments
 
 
-redshift:
-  redshift_host: redshift_host
-  redshift_port: redshift_port
-  redshift_user: redshift_user
-  redshift_password: redshift_password
-  redshift_db: redshift_db
+# redshift:
+#   redshift_host: redshift_host
+#   redshift_port: redshift_port
+#   redshift_user: redshift_user
+#   redshift_password: redshift_password
+#   redshift_db: redshift_db
 
 redshift_tables:
   posts: posts

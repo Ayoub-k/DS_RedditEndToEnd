@@ -27,6 +27,7 @@ class RedshiftConnector:
         """
         config = Config.get_config_yml(key_config)
         try:
+            print(config)
             self.conn = psycopg2.connect(os.getenv(config))
             self.cursor = self.conn.cursor()
             logging.info("Connected to the database successfully.")

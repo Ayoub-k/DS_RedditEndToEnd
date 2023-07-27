@@ -1,7 +1,7 @@
 -- Create the Comments dimension table
 CREATE TABLE Comments (
     comment_id VARCHAR(255) NOT NULL PRIMARY KEY,
-    body TEXT,
+    body VARCHAR(max),
     author VARCHAR(255),
     time_comment_id VARCHAR(50),
     created_utc_cmt TIMESTAMP
@@ -10,7 +10,7 @@ CREATE TABLE Comments (
 -- Create the Posts dimension table
 CREATE TABLE Posts (
     post_id VARCHAR(255) NOT NULL PRIMARY KEY,
-    title TEXT,
+    title VARCHAR(max),
     author VARCHAR(255),
     subreddit VARCHAR(255),
     url VARCHAR(255),

@@ -77,7 +77,7 @@ if __name__ == '__main__':
             df_cmt.drop(columns = params.droped_columns_cmt, inplace=True)
             df_pst.drop(columns = params.droped_columns_pst, inplace=True)
             # load data to redshift
-            redshift = RedshiftConnector('postgresql')
+            redshift = RedshiftConnector('redshift')
             tables = config['redshift_tables']
             redshift.load_data_from_df(df_pst, tables['posts'])
             redshift.load_data_from_df(df_cmt, tables['comments'])
