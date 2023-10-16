@@ -1,11 +1,13 @@
+# pylint: disable=import-error
 """Class for scarping data fro reddit using paraw
 """
 import os
 from typing import List, Union
 from dataclasses import dataclass
 import praw
-from src.common.utils.logger import logging
-from src.common.utils.utils import TimeUtils
+from loggers import logging
+from src.utils.utils import TimeUtils
+
 
 @dataclass
 class RedditAuth:
@@ -92,7 +94,7 @@ class RedditScraper:
         """
         logging.info("scaping posts is started")
         intvl = TimeUtils.get_time_interval(search_filter.time_filter)
-        logging.info(f"get posts for this period {search_filter.time_filter} in this interval {intvl}")
+        logging.info(f"Posts for this period {search_filter.time_filter} in this interval {intvl}")
         posts = []
         for post in self._reddit.subreddit(search_filter.subreddit)\
                     .top(time_filter=search_filter.time_filter, limit=search_filter.limit):
@@ -170,16 +172,3 @@ class RedditScraper:
             get_all_comments(["post1", "post2", "post3"])
         """
         return [comment for post_id in post_ids for comment in self.get_comments(post_id)]
-
-# if __name__ == '__main__':
-#     from src.common.utils.config import Config
-#     Config.load_config()
-#     # load configuration from config.yml
-#     config = Config.get_config_yml()
-#     # Create redditScraper
-#     scraper = RedditScraper(RedditAuth(**config['reddit']))
-#     print(scraper._reddit)
-#     search = RedditSearch(subreddit='sports', limit=None, time_filter='month')
-#     # Call the method being tested
-#     result = scraper.get_posts(search)
-#     print(len(result))
