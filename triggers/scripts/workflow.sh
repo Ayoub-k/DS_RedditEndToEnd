@@ -1,0 +1,9 @@
+ENV_NAME=$1
+SCRIPT_PATH=$2
+echo $ENV_NAME
+echo $SCRIPT_PATH
+
+cd $PROJECT_PATH
+source $ENV_NAME""/bin/activate
+export PYTHONPATH=$PROJECT_PATH
+python $PROJECT_PATH""$SCRIPT_PATH
